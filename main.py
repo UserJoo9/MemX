@@ -9,6 +9,9 @@ from winotify import Notification, audio
 import os
 import ctypes
 from tkinter import messagebox
+import webbrowser
+from CTkToolTip import CTkToolTip
+import sys
 
 import details
 import AutoStartup
@@ -20,12 +23,13 @@ class MemX:
     loop = True
 
     def __init__(self):
-        if self.is_admin():
-            self.gui = Gui(self.start_clean)
-            threading.Thread(target=self.percent_cleanup, daemon=True).start()
-            threading.Thread(target=self.timing_cleanup, daemon=True).start()
-        else:
-            messagebox.showerror("Run time error", "Please run the application as administrator!")
+        self.auto_startup = AutoStartup.AutoStartup()
+        if not self.auto_startup.check_startup(details.applicationName):
+            self.auto_startup.SAS()
+        self.gui = Gui(self.start_clean)
+        self.gui.withdraw()
+        threading.Thread(target=self.percent_cleanup, daemon=True).start()
+        threading.Thread(target=self.timing_cleanup, daemon=True).start()
 
     def is_admin(self):
         try:
@@ -33,8 +37,19 @@ class MemX:
         except:
             return False
 
-    def start_clean(self):
-        subprocess.call([details.CleanerFileName, details.CleanupKeyword], shell=True)
+    def get_admin(self):
+        if not self.is_admin():
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            self.gui.pystrayfunctions(None, "Exit")
+
+    def start_clean(self, check=False):
+        if not check:
+            if self.is_admin():
+                subprocess.call([details.CleanerFileName, details.CleanupKeyword], shell=True)
+            else:
+                self.get_admin()
+        else:
+            self.get_admin()
 
     def monitor_system(self):
         def monitor():
@@ -124,7 +139,7 @@ class Gui(ctk.CTk):
                                                   font=("roboto", 20, "bold"), width=100)
         self.auto_timing_cleanup_entry.grid(row=3, column=1, pady=10, sticky='w')
 
-        self.auto_timing_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50)
+        self.auto_timing_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50, command=lambda: start_clean(check=True))
         self.auto_timing_cleanup_checkbox.grid(row=3, column=2, pady=10, padx=5, sticky='w')
 
         self.auto_percent_cleanup_label = ctk.CTkLabel(self.main_frame, text="Clean when RAM reach ", font=("roboto", 20, "bold"))
@@ -134,24 +149,26 @@ class Gui(ctk.CTk):
                                                     font=("roboto", 20, "bold"), width=100)
         self.auto_percent_cleanup_entry.grid(row=4, column=1, pady=10, sticky='w')
 
-        self.auto_percent_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50)
+        self.auto_percent_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50, command=lambda: start_clean(check=True))
         self.auto_percent_cleanup_checkbox.grid(row=4, column=2, pady=10, padx=5, sticky='w')
 
         self.start_button = ctk.CTkButton(self.main_frame, text="MemX Clean", corner_radius=15, width=150, font=("roboto", 20, "bold"), command=start_clean)
         self.start_button.grid(row=5, column=0, columnspan=3, pady=10, padx=10)
+        CTkToolTip(self.start_button, message="Clean memory now")
 
-        self.startup_var = ctk.StringVar(value=self.check_auto_startup())
-        self.auto_startup_checkbox = ctk.CTkCheckBox(self.main_frame, text="Auto startup with windows", width=50, variable=self.startup_var,
-                                                     command=self.set_auto_startup, offvalue='off', onvalue='on', font=("roboto", 18, "bold"))
-        self.auto_startup_checkbox.grid(row=6, column=0, columnspan=3, pady=20, padx=5)
+        infoIcon = Image.open(details.resource_path("information.png"))
+        self.info_button = ctk.CTkButton(self.main_frame, text='', image=ctk.CTkImage(light_image=infoIcon, dark_image=infoIcon, size=(25, 25)),
+                                         fg_color=self.main_frame.cget("fg_color"), bg_color=self.main_frame.cget("fg_color"),
+                                         command=lambda: webbrowser.open("https://www.instagram.com/_youssefelkhodary/"),  width=10, corner_radius=15)
+        self.info_button.place(x=5, y=200)
+        CTkToolTip(self.info_button, message="Contact developer")
 
         self.protocol("WM_DELETE_WINDOW", self.withdraw)
         self.update()
         self.minsize(self.winfo_width(), self.winfo_height())
         x_cordinate = int((self.winfo_screenwidth() / 2) - (self.winfo_width() / 2))
         y_cordinate = int((self.winfo_screenheight() / 2) - (self.winfo_height() / 2))
-        self.geometry("{}+{}".format(x_cordinate, y_cordinate - 50))\
-
+        self.geometry("{}+{}".format(x_cordinate, y_cordinate - 50))
 
     def pystrayfunctions(self, icon, event):
         if f"{details.applicationName} Clean" in str(event):
@@ -177,22 +194,6 @@ class Gui(ctk.CTk):
         toaster.add_actions(label=buttonLabel)
         toaster.show()
 
-    def check_auto_startup(self):
-        if os.path.exists(details.autoStartupFile):
-            return open(details.autoStartupFile, 'r').read()
-        else:
-            open(details.autoStartupFile, 'w').write("off")
-            return "off"
-
-    def set_auto_startup(self):
-        if self.auto_startup_checkbox.get() == 'on':
-            open(details.autoStartupFile, 'w').write("on")
-            self.auto_startup.SAS()
-        else:
-            open(details.autoStartupFile, 'w').write("off")
-            self.auto_startup.DAS()
-
 
 if __name__ == "__main__":
     MemX().monitor_system()
-
