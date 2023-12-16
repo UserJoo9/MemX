@@ -8,7 +8,7 @@ from PIL import Image
 from winotify import Notification, audio
 import os
 import ctypes
-from tkinter import messagebox
+import ctypes.wintypes
 import webbrowser
 from CTkToolTip import CTkToolTip
 import sys
@@ -22,12 +22,14 @@ class MemX:
     memory_percent = None
     loop = True
 
-    def __init__(self):
-        self.auto_startup = AutoStartup.AutoStartup()
-        if not self.auto_startup.check_startup(details.applicationName):
-            self.auto_startup.SAS()
+    def __init__(self, argv):
+        self.auto_startup = AutoStartup.RegistryStartup()
+        if not self.auto_startup.check_autostart_registry(details.applicationName):
+            self.auto_startup.set_autostart_registry(details.applicationName, f'"{os.path.abspath(sys.argv[0])}"' + ' -hide', autostart=False)
+            self.auto_startup.set_autostart_registry(details.applicationName, f'"{os.path.abspath(sys.argv[0])}"' + ' -hide')
         self.gui = Gui(self.start_clean)
-        self.gui.withdraw()
+        if argv == '-hide':
+            self.gui.withdraw()
         threading.Thread(target=self.percent_cleanup, daemon=True).start()
         threading.Thread(target=self.timing_cleanup, daemon=True).start()
 
@@ -196,4 +198,9 @@ class Gui(ctk.CTk):
 
 
 if __name__ == "__main__":
-    MemX().monitor_system()
+    argv = None
+    try:
+        argv = sys.argv[1]
+    except:
+        pass
+    MemX(argv=argv).monitor_system()
