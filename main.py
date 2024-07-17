@@ -98,7 +98,7 @@ class MemX:
                     time_out = float(float(self.gui.auto_timing_cleanup_entry.get().split(" ")[0]) * 60)
                     time.sleep(time_out)
                     self.gui.notification(details.applicationName, f"{details.applicationName} is cleaning up memory\n"
-                                                           f"after {time_out} minutes.",
+                                                           f"after {time_out} secondes.",
                                                            "OK")
                     self.start_clean()
                     threading.Thread(target=self.continues_loop, daemon=True).start()
