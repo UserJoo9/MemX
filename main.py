@@ -83,9 +83,10 @@ class MemX:
                 time.sleep(0.1)
                 if self.gui.auto_percent_cleanup_checkbox.get():
                     if int(self.memory_percent) >= int(self.gui.auto_percent_cleanup_entry.get().replace(" %", "")):
-                        self.gui.notification(details.applicationName, f"RAM reached {int(self.memory_percent)}%\n"
-                                                               f"{details.applicationName} is cleaning up memory.",
-                                                               "OK")
+                        if self.gui.show_notification.get():
+                            self.gui.notification(details.applicationName, f"RAM reached {int(self.memory_percent)}%\n"
+                                                                f"{details.applicationName} is cleaning up memory.",
+                                                                "OK")
                         self.start_clean()
                         threading.Thread(target=self.continues_loop, daemon=True).start()
 
@@ -97,9 +98,10 @@ class MemX:
                 if self.gui.auto_timing_cleanup_checkbox.get():
                     time_out = float(float(self.gui.auto_timing_cleanup_entry.get().split(" ")[0]) * 60)
                     time.sleep(time_out)
-                    self.gui.notification(details.applicationName, f"{details.applicationName} is cleaning up memory\n"
-                                                           f"after {time_out} secondes.",
-                                                           "OK")
+                    if self.gui.show_notification.get():
+                        self.gui.notification(details.applicationName, f"{details.applicationName} is cleaning up memory\n"
+                                                            f"after {time_out} secondes.",
+                                                            "OK")
                     self.start_clean()
                     threading.Thread(target=self.continues_loop, daemon=True).start()
 
@@ -138,32 +140,37 @@ class Gui(ctk.CTk):
         self.auto_timing_cleanup_label.grid(row=3, column=0, pady=10, padx=(20, 5), sticky='w')
 
         self.auto_timing_cleanup_entry = ctk.CTkOptionMenu(self.main_frame, values=["5 m", "10 m", "15 m", "20 m", "30 m", "40 m", "45 m", "60 m"],
-                                                  font=("roboto", 20, "bold"), width=100)
+                                                  font=("roboto", 20, "bold"), width=100, corner_radius=15)
         self.auto_timing_cleanup_entry.grid(row=3, column=1, pady=10, sticky='w')
 
-        self.auto_timing_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50, command=lambda: start_clean(check=True))
+        self.auto_timing_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50, command=lambda: start_clean(check=True), border_width=1, corner_radius=15)
         self.auto_timing_cleanup_checkbox.grid(row=3, column=2, pady=10, padx=5, sticky='w')
 
-        self.auto_percent_cleanup_label = ctk.CTkLabel(self.main_frame, text="Clean when RAM reach ", font=("roboto", 20, "bold"))
+        self.auto_percent_cleanup_label = ctk.CTkLabel(self.main_frame, text="Clean RAM when reach ", font=("roboto", 20, "bold"))
         self.auto_percent_cleanup_label.grid(row=4, column=0, pady=10, padx=(20, 5), sticky='w')
 
         self.auto_percent_cleanup_entry = ctk.CTkOptionMenu(self.main_frame, values=["10 %","20 %", "30 %", "40 %", "50 %", "60 %", "70 %", "80 %", "90 %", "100 %"],
-                                                    font=("roboto", 20, "bold"), width=100)
+                                                    font=("roboto", 20, "bold"), width=100, corner_radius=15)
         self.auto_percent_cleanup_entry.grid(row=4, column=1, pady=10, sticky='w')
 
-        self.auto_percent_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50, command=lambda: start_clean(check=True))
+        self.auto_percent_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50, command=lambda: start_clean(check=True), border_width=1, corner_radius=15)
         self.auto_percent_cleanup_checkbox.grid(row=4, column=2, pady=10, padx=5, sticky='w')
 
         self.start_button = ctk.CTkButton(self.main_frame, text="MemX Clean", corner_radius=15, width=150, font=("roboto", 20, "bold"), command=start_clean)
         self.start_button.grid(row=5, column=0, columnspan=3, pady=10, padx=10)
         CTkToolTip(self.start_button, message="Clean memory now")
 
+        self.show_notification = ctk.CTkCheckBox(self.main_frame, text='Notification', fg_color=self.main_frame.cget("fg_color"), 
+                                           bg_color=self.main_frame.cget("fg_color"),width=10, corner_radius=15, border_width=1)
+        self.show_notification.place(x=300, y=205)
+        self.show_notification.select()
+
         infoIcon = Image.open(details.resource_path("information.png"))
         self.info_button = ctk.CTkButton(self.main_frame, text='', image=ctk.CTkImage(light_image=infoIcon, dark_image=infoIcon, size=(25, 25)),
                                          fg_color=self.main_frame.cget("fg_color"), bg_color=self.main_frame.cget("fg_color"),
-                                         command=lambda: webbrowser.open("https://www.instagram.com/_youssefelkhodary/"),  width=10, corner_radius=15)
+                                         command=lambda: webbrowser.open_new_tab("https://discord.com/invite/PP2Hc8eM7V"),  width=10, corner_radius=15)
         self.info_button.place(x=5, y=200)
-        CTkToolTip(self.info_button, message="Contact developer")
+        CTkToolTip(self.info_button, message="About developers")
 
         self.protocol("WM_DELETE_WINDOW", self.withdraw)
         self.update()
