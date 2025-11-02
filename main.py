@@ -8,13 +8,11 @@ from PIL import Image
 from winotify import Notification, audio
 import os
 import ctypes
-import ctypes.wintypes
 import webbrowser
 from CTkToolTip import CTkToolTip
 import sys
 
 import details
-import AutoStartup
 
 
 class MemX:
@@ -22,14 +20,8 @@ class MemX:
     memory_percent = None
     loop = True
 
-    def __init__(self, argv):
-        self.auto_startup = AutoStartup.RegistryStartup()
-        if not self.auto_startup.check_autostart_registry(details.applicationName):
-            self.auto_startup.set_autostart_registry(details.applicationName, f'"{os.path.abspath(sys.argv[0])}"' + ' -hide', autostart=False)
-            self.auto_startup.set_autostart_registry(details.applicationName, f'"{os.path.abspath(sys.argv[0])}"' + ' -hide')
+    def __init__(self):
         self.gui = Gui(self.start_clean)
-        if argv == '-hide':
-            self.gui.withdraw()
         threading.Thread(target=self.percent_cleanup, daemon=True).start()
         threading.Thread(target=self.timing_cleanup, daemon=True).start()
 
@@ -64,7 +56,7 @@ class MemX:
                     self.gui.memory_total.configure(text=f"Total memory: {total_memory}")
                     self.gui.memory_used.configure(text=f"Current Usage: {used_memory} ({int(self.memory_percent)}%)")
                     self.gui.update()
-                    time.sleep(0.5)
+                    time.sleep(1)
                 except:
                     pass
         threading.Thread(target=monitor, daemon=True).start()
@@ -75,12 +67,11 @@ class MemX:
         time.sleep(5)
         self.loop = True
 
-
     def percent_cleanup(self):
         while 1:
-            time.sleep(0.1)
+            time.sleep(0.5)
             while self.loop:
-                time.sleep(0.1)
+                time.sleep(0.5)
                 if self.gui.auto_percent_cleanup_checkbox.get():
                     if int(self.memory_percent) >= int(self.gui.auto_percent_cleanup_entry.get().replace(" %", "")):
                         if self.gui.show_notification.get():
@@ -92,9 +83,9 @@ class MemX:
 
     def timing_cleanup(self):
         while 1:
-            time.sleep(0.1)
+            time.sleep(0.5)
             while self.loop:
-                time.sleep(0.1)
+                time.sleep(0.5)
                 if self.gui.auto_timing_cleanup_checkbox.get():
                     time_out = float(float(self.gui.auto_timing_cleanup_entry.get().split(" ")[0]) * 60)
                     time.sleep(time_out)
@@ -106,16 +97,13 @@ class MemX:
                     threading.Thread(target=self.continues_loop, daemon=True).start()
 
 class Gui(ctk.CTk):
-
-    auto_startup = AutoStartup.AutoStartup()
-
     def __init__(self, start_clean, **kwargs):
         self.start_clean = start_clean
         super().__init__(**kwargs)
         self.title(details.applicationName)
 
-        self.SystemTray = Icon(details.applicationName, Image.open(details.png_icon), menu=Menu(
-            MenuItem(f"{details.applicationName} Clean", self.pystrayfunctions),
+        self.SystemTray = Icon(details.applicationName, Image.open(details.imgsPath + "memx.png"), menu=Menu(
+            MenuItem(f"Clean", self.pystrayfunctions),
             MenuItem(f"Show {details.applicationName}", self.pystrayfunctions),
             MenuItem(f"Hide {details.applicationName}", self.pystrayfunctions),
             MenuItem(f"Exit {details.applicationName}", self.pystrayfunctions)
@@ -124,10 +112,10 @@ class Gui(ctk.CTk):
 
         self.minsize(400, 200)
         self.resizable(False, False)
-        self.iconbitmap(details.ico_icon)
+        self.iconbitmap(details.imgsPath + "memx.ico")
 
         self.main_frame = ctk.CTkFrame(self, corner_radius=15)
-        self.main_frame.pack(padx=10, pady=10, fill="both", expand="true")
+        self.main_frame.pack(padx=5, pady=5, fill="both", expand="true")
         self.main_frame.columnconfigure(0, weight=1)
 
         self.memory_total = ctk.CTkLabel(self.main_frame, text="Total Memory: None", font=("roboto", 20, "bold"))
@@ -156,7 +144,7 @@ class Gui(ctk.CTk):
         self.auto_percent_cleanup_checkbox = ctk.CTkCheckBox(self.main_frame, text="", width=50, command=lambda: start_clean(check=True), border_width=1, corner_radius=15)
         self.auto_percent_cleanup_checkbox.grid(row=4, column=2, pady=10, padx=5, sticky='w')
 
-        self.start_button = ctk.CTkButton(self.main_frame, text="MemX Clean", corner_radius=15, width=150, font=("roboto", 20, "bold"), command=start_clean)
+        self.start_button = ctk.CTkButton(self.main_frame, text="Clean", corner_radius=15, width=150, font=("roboto", 20, "bold"), command=start_clean)
         self.start_button.grid(row=5, column=0, columnspan=3, pady=10, padx=10)
         CTkToolTip(self.start_button, message="Clean memory now")
 
@@ -165,10 +153,10 @@ class Gui(ctk.CTk):
         self.show_notification.place(x=300, y=205)
         self.show_notification.select()
 
-        infoIcon = Image.open(details.resource_path("information.png"))
+        infoIcon = Image.open(details.imgsPath + "information.png")
         self.info_button = ctk.CTkButton(self.main_frame, text='', image=ctk.CTkImage(light_image=infoIcon, dark_image=infoIcon, size=(25, 25)),
                                          fg_color=self.main_frame.cget("fg_color"), bg_color=self.main_frame.cget("fg_color"),
-                                         command=lambda: webbrowser.open_new_tab("https://discord.com/invite/PP2Hc8eM7V"),  width=10, corner_radius=15)
+                                         command=lambda: webbrowser.open_new_tab(details.discord_server),  width=10, corner_radius=15)
         self.info_button.place(x=5, y=200)
         CTkToolTip(self.info_button, message="About developers")
 
@@ -180,7 +168,7 @@ class Gui(ctk.CTk):
         self.geometry("{}+{}".format(x_cordinate, y_cordinate - 50))
 
     def pystrayfunctions(self, icon, event):
-        if f"{details.applicationName} Clean" in str(event):
+        if f"Clean" in str(event):
             self.start_clean()
         elif "Show" in str(event):
             self.deiconify()
@@ -193,7 +181,7 @@ class Gui(ctk.CTk):
 
     def notification(self, title, msg, buttonLabel):
         toaster = Notification(
-            icon=os.path.abspath(details.png_icon),
+            icon=os.path.abspath(details.imgsPath + "memx.png"),
             app_id=details.applicationName,
             title=title,
             msg=msg,
@@ -205,9 +193,4 @@ class Gui(ctk.CTk):
 
 
 if __name__ == "__main__":
-    argv = None
-    try:
-        argv = sys.argv[1]
-    except:
-        pass
-    MemX(argv=argv).monitor_system()
+    MemX().monitor_system()
