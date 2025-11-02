@@ -12,10 +12,7 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 
 applicationName = "MemX"
-
-ext = ".x"
-autoStartupFile = resource_path("MemXStartup" + ext)
 CleanerFileName = resource_path("EmptyStandbyList.exe")
 CleanupKeyword = "workingsets"
-png_icon = resource_path(f"memx.png")
-ico_icon = resource_path(f"memx.ico")
+imgsPath = resource_path("imgs\\")
+discord_server = "https://discord.gg/ESjvFte4T7"
