@@ -11,17 +11,7 @@ MemX is a lightweight and efficient memory cleaner tool designed to help optimiz
 
 ## 🚀 How it Works
 
-MemX primarily leverages the `EmptyStandbyList.exe` utility, which is a known tool for clearing the standby memory list on Windows systems. 
-
-The `details.py` file plays a crucial role in managing the paths to various application resources, and `AutoStartup.py` handles the logic for automatic execution.
-
-
-## 🛠️ Installation and Usage
-
-**Download the Executable (Recommended)**:
-
-Get the pre-compiled MemX executable directly from our Discord server:
-**[Download MemX Executable on Discord](https://discord.com/channels/1352667669865824346/1358537853990211604)**
+MemX primarily leverages the `EmptyStandbyList.exe` utility, which is a known tool for clearing the standby memory list on Windows systems.
 
 ## 🤝 Contributing
 
