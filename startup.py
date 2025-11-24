@@ -10,7 +10,7 @@ if sys.argv[0].endswith(".py"):
 else:
     app_name = sys.argv[0]
 target_path = os.path.join(os.path.expandvars(r'%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup'), app_name)
-current_path = os.path.abspath(sys.argv[0])
+current_path = os.path.abspath(app_name)
 
 def make_startup_copy():
     try:
