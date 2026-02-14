@@ -1,0 +1,2 @@
+AssetsController
+python -m nuitka --onefile --enable-plugin=tk-inter --include-data-dir=imgs=imgs --windows-icon-from-ico=imgs/memx.ico --include-data-file=EmptyStandbyList.exe=EmptyStandbyList.exe --windows-console-mode=disable --output-filename="MemX" --windows-uac-admin main.py

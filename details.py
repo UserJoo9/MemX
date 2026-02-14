@@ -1,0 +1,18 @@
+import sys
+import os
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+applicationName = "MemX"
+CleanerFileName = resource_path("EmptyStandbyList.exe")
+CleanupKeyword = "workingsets"
+imgsPath = resource_path("imgs\\")
+discord_server = "https://discord.gg/qZASJ9n2Y9"
