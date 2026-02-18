@@ -4,3 +4,4 @@ __pycache__
 *.onefile-build
 *.exe
 *.zip
+.gitignore
