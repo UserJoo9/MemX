@@ -1,5 +1,6 @@
 # MemX
 
+![MemX](assets/ui.png)
 
 MemX is a lightweight and efficient memory cleaner tool designed to help optimize your Windows system's performance by clearing unnecessary memory usage, particularly the standby list.
 
