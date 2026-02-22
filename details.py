@@ -15,4 +15,4 @@ applicationName = "MemX"
 CleanerFileName = resource_path("EmptyStandbyList.exe")
 CleanupKeyword = "workingsets"
 imgsPath = resource_path("imgs\\")
-discord_server = "https://discord.gg/qZASJ9n2Y9"
+discord_server = "https://beacons.ai/youssefalkhodary"
