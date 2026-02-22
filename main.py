@@ -13,7 +13,6 @@ from tkinter import messagebox
 import ast
 
 import details
-import startup
 import DataStoring as DS
 
 def is_admin():
@@ -99,7 +98,9 @@ class Gui(ctk.CTk):
     def __init__(self, start_clean, **kwargs):
         self.start_clean = start_clean
         super().__init__(**kwargs)
-        
+
+        self.notifications = True
+
         # Modern dark theme colors
         ctk.set_appearance_mode("dark")
         self.bg_dark = "#0a0e17"
@@ -113,9 +114,7 @@ class Gui(ctk.CTk):
         self.configure(fg_color=self.bg_dark)
 
         self.SystemTray = Icon(details.applicationName, Image.open(details.imgsPath + "memx.png"), menu=Menu(
-            MenuItem(f"Clean", self.pystrayfunctions),
             MenuItem(f"Show {details.applicationName}", self.pystrayfunctions),
-            MenuItem(f"Hide {details.applicationName}", self.pystrayfunctions),
             MenuItem(f"Exit {details.applicationName}", self.pystrayfunctions)
         ))
         threading.Thread(target=self.SystemTray.run, daemon=True).start()
@@ -311,31 +310,9 @@ class Gui(ctk.CTk):
             checkbox_width=20,
             checkbox_height=20,
             width=70,
+            command=self.control_notifications
         )
         self.show_notification.pack(side="right", pady=6)
-        self.show_notification.select()
-        
-        self.startup_btn = ctk.CTkCheckBox(
-            bottom_frame,
-            text='Startup',
-            font=("SF Pro", 12),
-            fg_color=self.accent_primary,
-            hover_color="#00cc70",
-            border_color="#252b3d",
-            text_color=self.text_secondary,
-            corner_radius=15,
-            border_width=1,
-            checkbox_width=20,
-            checkbox_height=20,
-            command=self.control_startup,
-            width=70,
-            state="disabled",
-        )
-        self.startup_btn.pack(side="right", pady=6)
-        if is_admin:
-            self.startup_btn.configure(state="normal")
-            if startup.check_startup_exists():
-                self.startup_btn.select()
         
         infoIcon = Image.open(details.imgsPath + "information.png")
         self.info_button = ctk.CTkButton(
@@ -353,6 +330,13 @@ class Gui(ctk.CTk):
         )
         self.info_button.pack(side="left", pady=6)
 
+        self.protocol("WM_DELETE_WINDOW", self.withdraw)
+        self.update()
+        self.minsize(self.winfo_width(), self.winfo_height())
+        x_cordinate = int((self.winfo_screenwidth() / 2) - (self.winfo_width() / 2))
+        y_cordinate = int((self.winfo_screenheight() / 2) - (self.winfo_height() / 2))
+        self.geometry("{}x{}+{}+{}".format(self.winfo_width(), self.winfo_height(), x_cordinate, y_cordinate - 50))
+
         if DS.check_registry_value(DS.key_name):
             data = DS.read_from_registry(DS.key_name)
             data = ast.literal_eval(data)
@@ -362,13 +346,8 @@ class Gui(ctk.CTk):
             self.auto_timing_cleanup_entry.set(data["period"])
             if data['enable_period']:
                 self.auto_timing_cleanup_checkbox.select()
-
-        self.protocol("WM_DELETE_WINDOW", self.withdraw)
-        self.update()
-        self.minsize(self.winfo_width(), self.winfo_height())
-        x_cordinate = int((self.winfo_screenwidth() / 2) - (self.winfo_width() / 2))
-        y_cordinate = int((self.winfo_screenheight() / 2) - (self.winfo_height() / 2))
-        self.geometry("{}x{}+{}+{}".format(self.winfo_width(), self.winfo_height(), x_cordinate, y_cordinate - 50))
+            if data["notifications"]:
+                self.show_notification.select()
 
     def update_progress_bar(self, percent):
         """Update progress bar with smooth color transition"""
@@ -387,15 +366,11 @@ class Gui(ctk.CTk):
             
             self.progress_bar.configure(fg_color=color)
             self.memory_percent_label.configure(text_color=color)
-            self.save_config()
+        self.save_config()
 
     def pystrayfunctions(self, icon, event):
-        if f"Clean" in str(event):
-            self.start_clean()
-        elif "Show" in str(event):
+        if "Show" in str(event):
             self.deiconify()
-        elif "Hide" in str(event):
-            self.withdraw()
         elif "Exit" in str(event):
             self.SystemTray.icon = False
             self.SystemTray.stop()
@@ -418,15 +393,16 @@ class Gui(ctk.CTk):
             "period": self.auto_timing_cleanup_entry.get(),
             "enable_period": self.auto_timing_cleanup_checkbox.get(),
             "percent": self.auto_percent_cleanup_entry.get(),
-            "enable_percent": self.auto_percent_cleanup_checkbox.get()
+            "enable_percent": self.auto_percent_cleanup_checkbox.get(),
+            "notifications": self.notifications
         }
         DS.write_to_registry(DS.key_name, str(save_data))
 
-    def control_startup(self):
-        if self.startup_btn.get():
-            startup.add_to_startup()
+    def control_notifications(self):
+        if self.show_notification.get():
+            self.notifications = True
         else:
-            startup.remove_startup()
+            self.notifications = False
 
 if __name__ == "__main__":
     MemX().monitor_system()
