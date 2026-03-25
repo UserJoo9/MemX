@@ -113,7 +113,7 @@ class Gui(ctk.CTk):
         self.title(details.applicationName)
         self.configure(fg_color=self.bg_dark)
 
-        self.SystemTray = Icon(details.applicationName, Image.open(details.imgsPath + "memx.png"), menu=Menu(
+        self.SystemTray = Icon(details.applicationName, Image.open(os.path.join(details.imgsPath, "memx.png")), menu=Menu(
             MenuItem(f"Show {details.applicationName}", self.pystrayfunctions),
             MenuItem(f"Exit {details.applicationName}", self.pystrayfunctions)
         ))
@@ -378,7 +378,7 @@ class Gui(ctk.CTk):
 
     def notification(self, title, msg, buttonLabel):
         toaster = Notification(
-            icon=os.path.abspath(details.imgsPath + "memx.png"),
+            icon=os.path.join(details.imgsPath, "memx.png"),
             app_id=details.applicationName,
             title=title,
             msg=msg,
